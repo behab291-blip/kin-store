@@ -1,6 +1,6 @@
  "use client";
 import {useEffect,useMemo,useState} from "react";
-import {supabase,configured} from "../lib/supabase";
+import {supabase,configured} from "./lib/supabase";
 type Product={id:string;name:string;description:string|null;price:number;category:string;image_url:string|null;colors:string[];sizes:string[];stock:number;active:boolean};
 export default function Home(){
  const [products,setProducts]=useState<Product[]>([]),[filter,setFilter]=useState("all"),[cart,setCart]=useState<any[]>([]),[drawer,setDrawer]=useState(false),[chosen,setChosen]=useState<Product|null>(null),[size,setSize]=useState("M"),[color,setColor]=useState("Black"),[notice,setNotice]=useState(""),[checkout,setCheckout]=useState(false),[busy,setBusy]=useState(false),[done,setDone]=useState("");
