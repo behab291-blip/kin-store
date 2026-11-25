@@ -5,8 +5,20 @@ export default function Admin(){
  const [session,setSession]=useState<any>(null),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[products,setProducts]=useState<any[]>([]),[orders,setOrders]=useState<any[]>([]),[tab,setTab]=useState("products"),[msg,setMsg]=useState(""),[edit,setEdit]=useState<any>(null),[upload,setUpload]=useState<File|null>(null),[busy,setBusy]=useState(false);
  const blank={name:"",description:"",price:"",category:"hoodie",image_url:"",colors:"Black, White",sizes:"S, M, L, XL",stock:"10",active:true};
  useEffect(()=>{if(!configured)return;supabase.auth.getSession().then(({data})=>setSession(data.session));const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>subscription.unsubscribe()},[]);
- async function load(){const p=await supabase.from("products").select("*").order("created_at",{ascending:false});setProducts(p.data||[]);const o=await supabase.from("orders").select("*").order("created_at",{ascending:false});setOrders(o.data||[])}
- useEffect(()=>{if(session)load()},[session]);
+async function load(){
+ const p=await supabase.from("products").select("*").order("created_at",{ascending:false});
+ setProducts(p.data||[]);
+
+ const o=await supabase.from("orders").select("*").order("created_at",{ascending:false});
+
+ if(o.error){
+   setMsg("Orders error: "+o.error.message);
+   console.log("Orders error:",o.error);
+   return;
+ }
+
+ setOrders(o.data||[]);
+} useEffect(()=>{if(session)load()},[session]);
 async function login(e:any){
  e.preventDefault();
  setMsg("جاري تسجيل الدخول...");
