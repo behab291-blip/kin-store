@@ -7,8 +7,16 @@ export default function Admin(){
  useEffect(()=>{if(!configured)return;supabase.auth.getSession().then(({data})=>setSession(data.session));const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>subscription.unsubscribe()},[]);
  async function load(){const p=await supabase.from("products").select("*").order("created_at",{ascending:false});setProducts(p.data||[]);const o=await supabase.from("orders").select("*").order("created_at",{ascending:false});setOrders(o.data||[])}
  useEffect(()=>{if(session)load()},[session]);
- async function login(e:any){e.preventDefault();const {error}=await supabase.auth.signInWithPassword({email,password});setMsg(error?.message||"");}
- async function save(e:any){e.preventDefault();setBusy(true);let image=edit.image_url;if(upload){const ext=upload.name.split(".").pop();const path=Date.now()+"."+ext;const {error}=await supabase.storage.from("products").upload(path,upload,{upsert:true});if(error){setMsg(error.message);setBusy(false);return}image=supabase.storage.from("products").getPublicUrl(path).data.publicUrl}
+async function login(e:any){
+ e.preventDefault();
+ setMsg("جاري تسجيل الدخول...");
+ try {
+  const {error}=await supabase.auth.signInWithPassword({email,password});
+  setMsg(error?.message || "تم تسجيل الدخول");
+ } catch(err:any) {
+  setMsg(err?.message || String(err));
+ }
+} async function save(e:any){e.preventDefault();setBusy(true);let image=edit.image_url;if(upload){const ext=upload.name.split(".").pop();const path=Date.now()+"."+ext;const {error}=await supabase.storage.from("products").upload(path,upload,{upsert:true});if(error){setMsg(error.message);setBusy(false);return}image=supabase.storage.from("products").getPublicUrl(path).data.publicUrl}
  const payload={name:edit.name,description:edit.description,price:Number(edit.price),category:edit.category,image_url:image,colors:edit.colors.split(",").map((x:string)=>x.trim()).filter(Boolean),sizes:edit.sizes.split(",").map((x:string)=>x.trim()).filter(Boolean),stock:Number(edit.stock),active:edit.active};
  const result=edit.id?await supabase.from("products").update(payload).eq("id",edit.id):await supabase.from("products").insert(payload);
  setBusy(false);if(result.error){setMsg(result.error.message);return}setEdit(null);setUpload(null);setMsg("Product saved.");load();}
